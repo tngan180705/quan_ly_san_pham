@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "699015604920",
+    "project_id": "quan-ly-san-pham-40ed1",
+    "storage_bucket": "quan-ly-san-pham-40ed1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699015604920:android:265417bafa41547234624d",
+        "android_client_info": {
+          "package_name": "com.example.quan_ly_san_pham"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEEeuXeAg7Aqe3AoH4TW_qRxrti3UWDFY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
