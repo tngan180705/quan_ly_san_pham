@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'add_vegetable.dart';
+import 'edit_vegetable.dart';
 
 class VegetableList extends StatefulWidget {
   final String userName;
@@ -203,14 +204,24 @@ class _VegetableListState extends State<VegetableList> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {
-                                // Logic chỉnh sửa sẽ thêm sau hoặc hướng tới trang Edit
-                              },
-                            ),
-                            IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _confirmDelete(context, doc.id),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditVegetable(
+                                      docId: docs[index]
+                                          .id, // ID của document trên Firestore
+                                      currentData:
+                                          data, // Map chứa dữ liệu hiện tại
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
