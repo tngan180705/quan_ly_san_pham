@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'vegetable_list.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -94,12 +95,21 @@ class _LoginPageState extends State<LoginPage> {
             .get();
 
         if (user.docs.isNotEmpty) {
+          String fetchedName = user.docs.first['ho_ten'];
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Chào mừng ${user.docs.first['ho_ten']}!"),
               backgroundColor: Colors.green,
             ),
           );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VegetableList(userName: fetchedName),
+            ),
+          );
+
           // Navigator.pushNamed(context, '/vegetable_list');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
