@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Import thư viện gây lỗi
-import 'ui/login.dart'; // Đảm bảo bạn đã có file này trong thư mục lib/ui/
+import 'package:firebase_core/firebase_core.dart';
+import 'ui/login.dart'; // Đảm bảo đường dẫn này đúng với dự án của bạn
+import 'ui/forgot_password.dart';
 
 void main() async {
   // BẮT BUỘC: Đảm bảo Flutter framework đã sẵn sàng
@@ -29,7 +30,17 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: LoginPage(), // Chuyển đến màn hình Login của bạn
+
+      // 1. Đặt LoginPage làm trang khởi đầu
+      initialRoute: '/',
+
+      // 2. Khai báo danh mục các trang (Routes)
+      // Điều này giúp hàm Logout gọi tên '/' để quay về trang chủ
+      routes: {
+        '/': (context) => LoginPage(),
+        '/forgot_password': (context) => ForgotPasswordPage(),
+        // Nếu bạn có thêm các trang khác, có thể khai báo thêm ở đây
+      },
     );
   }
 }

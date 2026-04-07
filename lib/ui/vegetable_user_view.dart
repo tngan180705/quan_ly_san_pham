@@ -1,18 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'add_vegetable.dart';
-import 'edit_vegetable.dart';
 
-class VegetableList extends StatefulWidget {
+class VegetableUserView extends StatefulWidget {
   final String userName;
-  const VegetableList({super.key, required this.userName});
+  const VegetableUserView({super.key, required this.userName});
 
   @override
-  _VegetableListState createState() => _VegetableListState();
+  _VegetableUserViewState createState() => _VegetableUserViewState();
 }
 
-class _VegetableListState extends State<VegetableList> {
+class _VegetableUserViewState extends State<VegetableUserView> {
   String searchText = "";
   String priceFilter = "Tất cả";
   String typeFilter = "Tất cả";
@@ -39,27 +37,21 @@ class _VegetableListState extends State<VegetableList> {
     }
   }
 
-  // Hàm xử lý Logout
   void _handleLogout(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Đăng xuất"),
-        content: const Text(
-          "Bạn có chắc chắn muốn quay lại màn hình đăng nhập?",
-        ),
+        content: const Text("Bạn muốn thoát ra màn hình đăng nhập?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("Hủy"),
           ),
           TextButton(
-            onPressed: () {
-              // Quay về màn hình đầu tiên (Login) và xóa hết lịch sử các trang trước đó
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/', (route) => false);
-            },
+            onPressed: () => Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil('/', (route) => false),
             child: const Text("Đồng ý", style: TextStyle(color: Colors.red)),
           ),
         ],
@@ -73,7 +65,7 @@ class _VegetableListState extends State<VegetableList> {
       backgroundColor: Colors.grey[100],
       body: Column(
         children: [
-          // HEADER & SEARCH
+          // HEADER
           Container(
             padding: const EdgeInsets.only(
               top: 50,
@@ -82,7 +74,7 @@ class _VegetableListState extends State<VegetableList> {
               right: 20,
             ),
             decoration: const BoxDecoration(
-              color: Colors.green,
+              color: Color.fromARGB(255, 37, 124, 16),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
@@ -101,11 +93,30 @@ class _VegetableListState extends State<VegetableList> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // NÚT LOGOUT MỚI THÊM Ở ĐÂY
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: Colors.white),
-                      onPressed: () => _handleLogout(context),
-                      tooltip: "Đăng xuất",
+                    Row(
+                      children: [
+                        // ICON GIỎ HÀNG (Chỉ có ở trang User)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.shopping_cart,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Tính năng giỏ hàng đang phát triển",
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        // ICON LOGOUT
+                        IconButton(
+                          icon: const Icon(Icons.logout, color: Colors.white),
+                          onPressed: () => _handleLogout(context),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -114,7 +125,7 @@ class _VegetableListState extends State<VegetableList> {
                   onChanged: (value) =>
                       setState(() => searchText = value.toLowerCase()),
                   decoration: InputDecoration(
-                    hintText: "Tìm tên rau...",
+                    hintText: "Tìm sản phẩm...",
                     prefixIcon: const Icon(Icons.search, color: Colors.green),
                     filled: true,
                     fillColor: Colors.white,
@@ -128,43 +139,36 @@ class _VegetableListState extends State<VegetableList> {
             ),
           ),
 
-          // BỘ LỌC (FILTER)
+          // BỘ LỌC
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            padding: const EdgeInsets.all(15),
             child: Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: typeFilter,
-                    decoration: const InputDecoration(
-                      labelText: "Loại",
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                    ),
                     items: ["Tất cả", "Rau", "Củ", "Nấm"]
                         .map((t) => DropdownMenuItem(value: t, child: Text(t)))
                         .toList(),
                     onChanged: (v) => setState(() => typeFilter = v!),
+                    decoration: const InputDecoration(labelText: "Loại"),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: priceFilter,
-                    decoration: const InputDecoration(
-                      labelText: "Giá tiền",
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                    ),
                     items: ["Tất cả", "Dưới 20k", "Trên 20k"]
                         .map((p) => DropdownMenuItem(value: p, child: Text(p)))
                         .toList(),
                     onChanged: (v) => setState(() => priceFilter = v!),
+                    decoration: const InputDecoration(labelText: "Giá"),
                   ),
                 ),
               ],
             ),
           ),
 
-          // DANH SÁCH SẢN PHẨM
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -193,108 +197,31 @@ class _VegetableListState extends State<VegetableList> {
                   padding: const EdgeInsets.all(15),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    var doc = docs[index];
-                    var data = doc.data() as Map<String, dynamic>;
-
+                    var data = docs[index].data() as Map<String, dynamic>;
                     return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.only(bottom: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.all(10),
-                        leading: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.grey[200],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: SizedBox(
+                            width: 60,
+                            height: 60,
                             child: _buildProductImage(data['hinhanh'] ?? ""),
                           ),
                         ),
                         title: Text(
-                          "ID: ${data['idsanpham']} - ${data['tensp']}",
+                          data['tensp'],
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Loại: ${data['loaisp']}"),
-                            Text(
-                              "${data['gia']}đ",
-                              style: const TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditVegetable(
-                                      docId: doc.id,
-                                      currentData: data,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _confirmDelete(context, doc.id),
-                            ),
-                          ],
-                        ),
+                        subtitle: Text("${data['gia']}đ - ${data['loaisp']}"),
                       ),
                     );
                   },
                 );
               },
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AddVegetable()),
-        ),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, String docId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Xác nhận xóa?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Hủy"),
-          ),
-          TextButton(
-            onPressed: () {
-              FirebaseFirestore.instance
-                  .collection('vegetables')
-                  .doc(docId)
-                  .delete();
-              Navigator.pop(context);
-            },
-            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
